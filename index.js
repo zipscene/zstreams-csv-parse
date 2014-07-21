@@ -9,7 +9,8 @@ function CsvTransform(opts) {
 	this.escape = opts.escape || '"';
 	this.newlines = ['\r','\n'];
 	Transform.call(this, {});
-	this.writableState.objectMode = true;   // Read data, write objects
+	this._readableState.objectMode = true;   // Read data, write objects
+	this._readableState.highWaterMark = 100;
 	this.state = 1;
 	this.buf = '';
 	this.res = [];

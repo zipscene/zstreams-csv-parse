@@ -5,7 +5,7 @@
   "main": "./index.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:crispy1989/zstreams-csv-parse.git"
+    "url": "git@github.com:zipscene/zstreams-csv-parse.git"
   },
   "dependencies": {
     "zstreams": "^3.2.1"

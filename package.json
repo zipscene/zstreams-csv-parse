@@ -1,6 +1,13 @@
 {
-	"name": "csv-transform",
-	"version": "0.1.0",
-	"private": true,
-	"main": "index.js"
+  "name": "zstreams-csv-parse",
+  "version": "0.1.0",
+  "description": "Streaming CSV parser for node.js streams",
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:crispy1989/zstreams-csv-parse.git"
+  },
+  "dependencies": {
+    "zstreams": "^3.2.1"
+  }
 }

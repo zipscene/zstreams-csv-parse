@@ -1,18 +1,18 @@
-# csv-transform
-### Simple CSV parser
+# zstreams-csv-parse
+### ZStreams simple CSV parser
 
 ```javascript
-var CSV = require('csv-transform');
+var CSVParse = require('zstreams-csv-parse');
 
 // Input: test.txt
 // Name|Quantity|Price
 // Cheeseburger|1|5.80
 // Water|3|0
 
-var csv = new CSV({
+var csvParse = new CSVParse({
 	delimiter: '|'
 });
-fs.createReadStream('test.txt').pipe(csv).pipe(process.stdout);
+zstreams.fromFile('test.txt').pipe(csvParse).pipe(process.stdout);
 
 // Output
 // ["Name", "Quantity", "Price"]

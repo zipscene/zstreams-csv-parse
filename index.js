@@ -1,4 +1,4 @@
-var Transform = require('stream').Transform;
+var Transform = require('zstreams').Transform;
 var util = require('util');
 
 util.inherits(CsvTransform, Transform);

@@ -120,4 +120,14 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 	}
 };
 
+CsvTransform.prototype._flush = function(cb) {
+	var self = this;
+	if (self.buf) {
+		self.res.push(self.buf);
+	}
+	if (self.res.length) {
+		self.push(self.res);
+	}
+}
+
 module.exports = CsvTransform;

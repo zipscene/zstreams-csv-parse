@@ -128,6 +128,7 @@ CsvTransform.prototype._flush = function(cb) {
 	if (self.res.length) {
 		self.push(self.res);
 	}
-}
+	cb();
+};
 
 module.exports = CsvTransform;

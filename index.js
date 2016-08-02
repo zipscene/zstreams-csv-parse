@@ -8,6 +8,8 @@ function CsvTransform(opts) {
 	this.delimiter = opts.delimiter || ',';
 	this.escape = opts.escape || '"';
 	this.newlines = ['\r','\n'];
+	this.mapHeaders = !!opts.mapHeaders;
+	this.headers = opts.headers;
 	Transform.call(this, {});
 	this._readableState.objectMode = true;   // Read data, write objects
 	this._readableState.highWaterMark = 100;
@@ -102,8 +104,31 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 	cb();
 
 	function emitLine(res) {
-		self.push(res);
+		if(self.mapHeaders) {
+			if(self.headers) {
+				var retObj = {};
+				for(var i = 0; i < self.headers.length; i++) {
+					if (res[i].length > 0) retObj[self.headers[i]] = res[i];
+				}
+				self.push(retObj);
+			} else {
+				self.headers = res;
+			}
+		} else {
+			self.push(res);
+		}
 	}
+};
+
+CsvTransform.prototype._flush = function(cb) {
+	var self = this;
+	if (self.buf) {
+		self.res.push(self.buf);
+	}
+	if (self.res.length) {
+		self.push(self.res);
+	}
+	cb();
 };
 
 module.exports = CsvTransform;

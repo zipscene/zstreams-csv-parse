@@ -43,6 +43,7 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 				emitLine(this.res);
 				this.buf = '';
 				this.res = [];
+				this.state = 5;
 			} else {
 				this.buf += c;
 				this.state = 4;
@@ -52,7 +53,7 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 				this.state = 3;
 			} else if(this.newlines.indexOf(c) != -1) {
 				this.res.push('"' + this.buf);
-				this.state = 1;
+				this.state = 5;
 				emitLine(this.res);
 				this.buf = '';
 				this.res = [];
@@ -69,7 +70,7 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 				this.state = 2;
 			} else if(this.newlines.indexOf(c) != -1) {
 				this.res.push(this.buf);
-				this.state = 1;
+				this.state = 5;
 				emitLine(this.res);
 				this.buf = '';
 				this.res = [];
@@ -84,7 +85,7 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 				this.state = 1;
 			} else if(this.newlines.indexOf(c) != -1) {
 				this.res.push(this.buf);
-				this.state = 1;
+				this.state = 5;
 				emitLine(this.res);
 				this.buf = '';
 				this.res = [];
@@ -107,7 +108,7 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 		if(self.mapHeaders) {
 			if(self.headers) {
 				var retObj = {};
-				for(var i = 0; i < self.headers.length; i++) {
+				for(var i = 0; i < self.headers.length && i < res.length; i++) {
 					if (res[i].length > 0) retObj[self.headers[i]] = res[i];
 				}
 				self.push(retObj);

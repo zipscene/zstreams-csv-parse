@@ -3,11 +3,17 @@
   "version": "0.2.1",
   "description": "Streaming CSV parser for node.js streams",
   "main": "./index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
   "repository": {
     "type": "git",
     "url": "git@github.com:zipscene/zstreams-csv-parse.git"
   },
   "dependencies": {
     "zstreams": "^3.2.1"
+  },
+  "devDependencies": {
+    "objtools": "^1.6.5"
   }
 }

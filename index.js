@@ -5,6 +5,8 @@ util.inherits(CsvTransform, Transform);
 
 function CsvTransform(opts) {
 	if(!opts) opts = {};
+	if (!opts.delimiter) opts.delimiter = 'auto';
+	if (opts.delimiter === 'auto') opts.delimiter = [ ',', '\t' ];
 	this.delimiter = opts.delimiter || ',';
 	this.escape = opts.escape || '"';
 	this.newlines = ['\r','\n'];
@@ -18,10 +20,31 @@ function CsvTransform(opts) {
 	this.res = [];
 }
 
-
 CsvTransform.prototype._transform = function(chunk, encoding, cb) {
-	var self = this;
 	var str = chunk.toString();
+	if (Array.isArray(this.delimiter)) {
+		// Autodetecting delimiter
+		for (var i = 0; i < str.length; i++) {
+			if (this.delimiter.indexOf(str[i]) !== -1) {
+				this.delimiter = str[i];
+				break;
+			}
+		}
+		if (Array.isArray(this.delimiter)) {
+			if (!this._autoDelimiterBuffer) this._autoDelimiterBuffer = '';
+			this._autoDelimiterBuffer += str;
+		} else {
+			if (this._autoDelimiterBuffer) this._processChunk(this._autoDelimiterBuffer);
+			delete this._autoDelimiterBuffer;
+			this._processChunk(str);
+		}
+	} else {
+		this._processChunk(str);
+	}
+	cb();
+};
+
+CsvTransform.prototype._processChunk = function(str) {
 	var delimiter = this.delimiter || ',';
 	var escape = this.escape || '"';
 	// States:
@@ -38,9 +61,9 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 				this.buf = '';
 			} else if(c === escape) {
 				this.state = 2;
-			} else if(this.newlines.indexOf(c) != -1) {
+			} else if(this.newlines.indexOf(c) !== -1) {
 				this.res.push('');
-				emitLine(this.res);
+				this._emitLine(this.res);
 				this.buf = '';
 				this.res = [];
 				this.state = 5;
@@ -51,10 +74,10 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 		} else if(this.state === 2) {
 			if(c === escape) {
 				this.state = 3;
-			} else if(this.newlines.indexOf(c) != -1) {
+			} else if(this.newlines.indexOf(c) !== -1) {
 				this.res.push('"' + this.buf);
 				this.state = 5;
-				emitLine(this.res);
+				this._emitLine(this.res);
 				this.buf = '';
 				this.res = [];
 			} else {
@@ -68,10 +91,10 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 			} else if(c === escape) {
 				this.buf += c;
 				this.state = 2;
-			} else if(this.newlines.indexOf(c) != -1) {
+			} else if(this.newlines.indexOf(c) !== -1) {
 				this.res.push(this.buf);
 				this.state = 5;
-				emitLine(this.res);
+				this._emitLine(this.res);
 				this.buf = '';
 				this.res = [];
 			} else {
@@ -83,17 +106,17 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 				this.res.push(this.buf);
 				this.buf = '';
 				this.state = 1;
-			} else if(this.newlines.indexOf(c) != -1) {
+			} else if(this.newlines.indexOf(c) !== -1) {
 				this.res.push(this.buf);
 				this.state = 5;
-				emitLine(this.res);
+				this._emitLine(this.res);
 				this.buf = '';
 				this.res = [];
 			} else {
 				if(c != '\r') this.buf += c;
 			}
 		} else if(this.state === 5) {
-			if(this.newlines.indexOf(c) != -1) {
+			if(this.newlines.indexOf(c) !== -1) {
 				//Found another newline character; discard it and wait for next character
 			} else {
 				//End of newline sequence; change to state 1 WITHOUT CONSUMING CURRENT CHARACTER
@@ -102,34 +125,33 @@ CsvTransform.prototype._transform = function(chunk, encoding, cb) {
 			}
 		}
 	}
-	cb();
+};
 
-	function emitLine(res) {
-		if(self.mapHeaders) {
-			if(self.headers) {
-				var retObj = {};
-				for(var i = 0; i < self.headers.length && i < res.length; i++) {
-					if (res[i].length > 0) retObj[self.headers[i]] = res[i];
-				}
-				self.push(retObj);
-			} else {
-				self.headers = res;
+CsvTransform.prototype._emitLine = function(res) {
+	if(this.mapHeaders) {
+		if(this.headers) {
+			var retObj = {};
+			for(var i = 0; i < this.headers.length && i < res.length; i++) {
+				if (res[i].length > 0) retObj[this.headers[i]] = res[i];
 			}
+			this.push(retObj);
 		} else {
-			self.push(res);
+			this.headers = res;
 		}
+	} else {
+		this.push(res);
 	}
 };
 
 CsvTransform.prototype._flush = function(cb) {
-	var self = this;
-	if (self.buf) {
-		self.res.push(self.buf);
+	if (this.buf) {
+		this.res.push(this.buf);
 	}
-	if (self.res.length) {
-		self.push(self.res);
+	if (this.res.length) {
+		this.push(this.res);
 	}
 	cb();
 };
 
 module.exports = CsvTransform;
+

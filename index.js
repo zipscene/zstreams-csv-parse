@@ -148,7 +148,7 @@ CsvTransform.prototype._flush = function(cb) {
 		this.res.push(this.buf);
 	}
 	if (this.res.length) {
-		this.push(this.res);
+		this._emitLine(this.res);
 	}
 	cb();
 };
